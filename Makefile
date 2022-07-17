@@ -27,6 +27,9 @@ download_ne_data: ## Download data from natural earth
 proj_vis_wgs84: ## Generates the WGS 84 map for proj-vis
 	poetry run python scripts/proj_vis_wgs84.py
 
+social_preview: ## Generates the social_preview image for this repository
+	poetry run python scripts/social_preview.py
+
 lint: ## Checks for linting errors
 	poetry run flake8
 
