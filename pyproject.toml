@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "world-maps"
+version = "0.0.0"
+description = ""
+authors = ["Leif Gehrmann <leif.gehrmann@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyproj = "^3.3.0"
+Shapely = "^1.8.1"
+click = "^8.1.2"
+pyshp = "^2.2.0"
+map-engraver = {git = "https://github.com/leifgehrmann/map-engraver.git"}
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
