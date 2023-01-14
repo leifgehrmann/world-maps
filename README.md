@@ -10,3 +10,7 @@ graphics that I cannot otherwise find on the web.
 ## proj_vis_wgs84.py
 
 ![A map of the world, with oceans and lakes being colored as blue, and land being colored as white.](examples/proj-vis-wgs84.png)
+
+## proj_vis_background.py
+
+![A map of the world, with oceans and lakes being transparent, and land being colored as blue.](examples/proj-vis-background.svg)
