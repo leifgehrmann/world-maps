@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import click as click
 import shapefile
@@ -8,7 +7,6 @@ from pyproj import CRS
 
 from shapely import ops
 from shapely.geometry import shape, Polygon
-from shapely.geometry.base import BaseGeometry
 
 from map_engraver.data.geo.geo_coordinate import GeoCoordinate
 from map_engraver.data.geo_canvas_ops.geo_canvas_scale import GeoCanvasScale
@@ -44,25 +42,13 @@ def render():
     land_shapes = parse_shapefile(land_shape_path)
     lake_shapes = parse_shapefile(lake_shape_path)
 
-    # Invert CRS for shapes, because shapefiles are store coordinates are
-    # lon/lat, not according to the ISO-approved standard.
-    # Todo: Replace this by adding `crs_yx=True` to the build_transformer when
-    # it has been added.
-    def transform_geoms_to_invert(geoms: List[BaseGeometry]):
-        return list(map(
-            lambda geom: ops.transform(lambda x, y: (y, x), geom),
-            geoms
-        ))
-
     antarctica_filter = Polygon([
-        (-62, -180),
-        (-62, 180),
-        (-90, 180),
-        (-90, -180),
+        (-180, -62),
+        (180, -62),
+        (180, -90),
+        (-180, -90),
     ])
 
-    land_shapes = transform_geoms_to_invert(land_shapes)
-    lake_shapes = transform_geoms_to_invert(lake_shapes)
     land_shapes = ops.unary_union(land_shapes)
     lake_shapes = ops.unary_union(lake_shapes)
     land_shapes = land_shapes.difference(lake_shapes)
@@ -92,11 +78,14 @@ def render():
     origin_for_geo = GeoCoordinate(0, 0, crs)
     origin_for_canvas = CanvasCoordinate(width / 2, width / 16)
     wgs84_to_canvas = build_crs_to_canvas_transformer(
-        crs=CRS.from_proj4('+proj=aea +lat_1=-20 +lat_2=0 +lon_0=0 +lat_0=0 +x_0=0 +y_0=0'),
+        crs=CRS.from_proj4(
+            '+proj=aea +lat_1=-20 +lat_2=0 +lon_0=0 +lat_0=0 +x_0=0 +y_0=0'
+        ),
         data_crs=crs,
         scale=geo_to_canvas_scale,
         origin_for_geo=origin_for_geo,
-        origin_for_canvas=origin_for_canvas
+        origin_for_canvas=origin_for_canvas,
+        is_data_yx=True  # Shapely data is always lat,long
     )
 
     # Finally, let's get to rendering stuff!

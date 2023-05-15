@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import click as click
 import shapefile
@@ -11,12 +10,11 @@ from pyproj import CRS
 
 from shapely import ops
 from shapely.geometry import shape
-from shapely.geometry.base import BaseGeometry
 
 from map_engraver.data.geo.geo_coordinate import GeoCoordinate
 from map_engraver.data.geo_canvas_ops.geo_canvas_scale import GeoCanvasScale
 from map_engraver.data.geo_canvas_ops.geo_canvas_transformers import \
-    build_transformer
+    build_crs_to_canvas_transformer
 
 from map_engraver.drawable.layout.background import Background
 from map_engraver.drawable.geometry.polygon_drawer import PolygonDrawer
@@ -49,18 +47,6 @@ def render():
     land_shapes = parse_shapefile(land_shape_path)
     lake_shapes = parse_shapefile(lake_shape_path)
 
-    # Invert CRS for shapes, because shapefiles are store coordinates are
-    # lon/lat, not according to the ISO-approved standard.
-    # Todo: Replace this by adding `crs_yx=True` to the build_transformer when
-    # it has been added.
-    def transform_geoms_to_invert(geoms: List[BaseGeometry]):
-        return list(map(
-            lambda geom: ops.transform(lambda x, y: (y, x), geom),
-            geoms
-        ))
-
-    land_shapes = transform_geoms_to_invert(land_shapes)
-    lake_shapes = transform_geoms_to_invert(lake_shapes)
     land_shapes = ops.unary_union(land_shapes)
     lake_shapes = ops.unary_union(lake_shapes)
     land_shapes = land_shapes.difference(lake_shapes)
@@ -88,12 +74,13 @@ def render():
     )
     origin_for_geo = GeoCoordinate(0, 0, crs)
     origin_for_canvas = CanvasCoordinate(width / 4, height / 2)
-    wgs84_to_canvas = build_transformer(
+    wgs84_to_canvas = build_crs_to_canvas_transformer(
         crs=CRS.from_proj4('+proj=rpoly'),
         data_crs=crs,
         scale=geo_to_canvas_scale,
         origin_for_geo=origin_for_geo,
-        origin_for_canvas=origin_for_canvas
+        origin_for_canvas=origin_for_canvas,
+        is_data_yx=True  # Shapefile data is always lat,long
     )
 
     # Finally, let's get to rendering stuff!
@@ -112,8 +99,17 @@ def render():
     polygon_drawer.draw(canvas)
 
     text_layout = Layout(canvas)
-    text_layout.set_markup('<span face="SF Pro Rounded" weight="bold" font_size="90pt">world-maps</span>')
-    text_layout.position = CanvasCoordinate(Cu(0), Cu.from_pt(height.pt / 2 - 70))
+    text_layout.apply_markup(
+        '<span '
+        'face="SF Pro Rounded" '
+        'weight="bold" '
+        'font_size="90pt"'
+        '>world-maps</span>'
+    )
+    text_layout.position = CanvasCoordinate(
+        Cu(0),
+        Cu.from_pt(height.pt / 2 - 70)
+    )
     text_layout.width = width
     text_layout.alignment = Alignment.CENTER
     text_layout.color = (1, 1, 1)
