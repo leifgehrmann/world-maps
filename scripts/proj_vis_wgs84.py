@@ -8,12 +8,11 @@ from pyproj import CRS
 
 from shapely import ops
 from shapely.geometry import shape
-from shapely.geometry.base import BaseGeometry
 
 from map_engraver.data.geo.geo_coordinate import GeoCoordinate
 from map_engraver.data.geo_canvas_ops.geo_canvas_scale import GeoCanvasScale
 from map_engraver.data.geo_canvas_ops.geo_canvas_transformers import \
-    build_transformer
+    build_crs_to_canvas_transformer
 
 from map_engraver.drawable.layout.background import Background
 from map_engraver.drawable.geometry.polygon_drawer import PolygonDrawer
@@ -46,18 +45,6 @@ def render():
     land_shapes = parse_shapefile(land_shape_path)
     lake_shapes = parse_shapefile(lake_shape_path)
 
-    # Invert CRS for shapes, because shapefiles are store coordinates are
-    # lon/lat, not according to the ISO-approved standard.
-    # Todo: Replace this by adding `crs_yx=True` to the build_transformer when
-    # it has been added.
-    def transform_geoms_to_invert(geoms: List[BaseGeometry]):
-        return list(map(
-            lambda geom: ops.transform(lambda x, y: (y, x), geom),
-            geoms
-        ))
-
-    land_shapes = transform_geoms_to_invert(land_shapes)
-    lake_shapes = transform_geoms_to_invert(lake_shapes)
     land_shapes = ops.unary_union(land_shapes)
     lake_shapes = ops.unary_union(lake_shapes)
     land_shapes = land_shapes.difference(lake_shapes)
@@ -87,12 +74,13 @@ def render():
     origin_x = Cu.from_px(0)
     origin_y = Cu.from_px(0)
     origin_for_canvas = CanvasCoordinate(origin_x, origin_y)
-    wgs84_to_canvas = build_transformer(
+    wgs84_to_canvas = build_crs_to_canvas_transformer(
         crs=crs,
         data_crs=crs,
         scale=geo_to_canvas_scale,
         origin_for_geo=origin_for_geo,
-        origin_for_canvas=origin_for_canvas
+        origin_for_canvas=origin_for_canvas,
+        is_data_yx = True  # Shapely data is always lat,long
     )
 
     # Finally, let's get to rendering stuff!
