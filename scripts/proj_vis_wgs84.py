@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import click as click
 import shapefile
@@ -26,8 +25,8 @@ from map_engraver.canvas.canvas_unit import CanvasUnit as Cu
 def render():
     name = 'proj-vis-wgs84.png'
 
-    bg_color = (59/255, 130/255, 246/255)
-    land_color = (255/255, 255/255, 255/255)
+    bg_color = (59 / 255, 130 / 255, 246 / 255)
+    land_color = (255 / 255, 255 / 255, 255 / 255)
 
     # Extract shapefile data into multi-polygons
     data_path = Path(__file__).parent.parent.joinpath('data')
@@ -80,7 +79,7 @@ def render():
         scale=geo_to_canvas_scale,
         origin_for_geo=origin_for_geo,
         origin_for_canvas=origin_for_canvas,
-        is_data_yx = True  # Shapely data is always lat,long
+        is_data_yx=True  # Shapely data is always lat,long
     )
 
     # Finally, let's get to rendering stuff!
