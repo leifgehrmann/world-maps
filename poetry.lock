@@ -219,7 +219,7 @@ Shapely = "^2.0.1"
 type = "git"
 url = "https://github.com/leifgehrmann/map-engraver.git"
 reference = "HEAD"
-resolved_reference = "9316037ed5685d77ba3eb53a006248403af39bd6"
+resolved_reference = "21694063674a1de230ef7970fc0eaf29ce6bc83c"
 
 [[package]]
 name = "mccabe"
